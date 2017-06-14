@@ -51,13 +51,8 @@ set_marks <- function(pp, gene.marks, log.fcn = NA, pseudo.count = 1){
 pp_select <-  function(pp, sel.genes){
 
     marx_orig = pp[['marks']]
-    marx = marx_orig[, sel.genes]
+    marx = marx_orig[, sel.genes, drop = FALSE]
     
-    ##handle drop of rownames if a single gene selected (TBD: possibly use drop = FALSE in the subsetting instead)
-    if(length(sel.genes) == 1 & !is.numeric(marx_orig)){
-        names(marx) = rownames(marx_orig)
-    }
-
     ##set marks
     pp[['marks']] = marx
     
