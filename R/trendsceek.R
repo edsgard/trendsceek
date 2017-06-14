@@ -76,7 +76,9 @@ cellsceek_jpp <- function(j_pp, nrand = 1000, cell_alpha = 0.05, h = NA){
         if(ncol(marx) > 1){
             stop('The marks can only be of of one-dimension (a single gene)')
         }else{
-            marx = marx[, 1]
+            marx_vec = marx[, 1]
+            names(marx_vec) = rownames(marx)
+            marx = marx_vec
         }
     }
     
