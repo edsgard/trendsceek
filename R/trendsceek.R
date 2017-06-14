@@ -72,7 +72,14 @@ cellsceek_jpp <- function(j_pp, nrand = 1000, cell_alpha = 0.05, h = NA){
     pos_mat = cbind(j_pp[['x']], j_pp[['y']])
     colnames(pos_mat) = c('x', 'y')
     marx = j_pp[['marks']]
-
+    if(is.data.frame(marx) || is.matrix(marx)){
+        if(ncol(marx) > 1){
+            stop('The marks can only be of of one-dimension (a single gene)')
+        }else{
+            marx = marx[, 1]
+        }
+    }
+    
     ##observed kde
     weights = round(10^marx) ##weights: a vector of integers representing frequencies of individual observations.
     if(is.logical(h)){
