@@ -1,0 +1,296 @@
+---
+title: "Tutorial for identifying genes with spatial expression trends using trendsceek"
+author: "Daniel Edsgärd"
+date: "`r Sys.Date()`"
+output: rmarkdown::html_vignette
+vignette: >
+  %\VignetteIndexEntry{Tutorial for identifying genes with spatial expression trends using trendsceek}
+  %\VignetteEngine{knitr::rmarkdown}
+  %\VignetteEncoding{UTF-8}
+---
+## Synthetic data
+
+```{r }
+##Load library
+library('trendsceek')
+```
+
+### Create syntethic data
+Below we simulate a step, hotspot and streak of cells with higher expression than the background.
+
+```{r }
+##Set parameters
+##approximate number of cells
+nsim_cells = 300
+
+##low and high expression levels
+low_expr = c(10, 10)
+high_expr = c(20, 50)
+
+##Randomly position the cells in 2d space
+pp = sim_pois(nsim_cells)
+
+##Add gene expression levels as mark distributions
+pp = add_markdist_step(pp, low_expr, high_expr)
+pp = add_markdist_hotspot(pp, low_expr, high_expr)
+pp = add_markdist_streak(pp, low_expr, high_expr)
+```
+
+Plot synthetic data
+
+```{r sim-scatter-plot, fig.width = 5, fig.height = 5, include = TRUE, echo = TRUE, fig.align = 'left', fig.cap = ''}
+plot_pp_scatter(pp, log_marks = FALSE, scale_marks = FALSE, pal.direction = -1)
+
+```{r sim-density-plot, fig.width = 5, fig.height = 5, include = TRUE, echo = TRUE, fig.align = 'left', fig.cap = ''}
+plot_pp_density(pp, log_marks = FALSE)
+```
+
+### Run trendsceek
+
+```{r sim-trendsceek, results='hide'}
+##set parameters
+nrand = 100
+ncores = 1
+
+##run
+trendstat_list = trendsceek_test(pp, nrand, ncores)
+
+##extract significant genes
+alpha = 0.1 ##Benjamini-Hochberg
+sig_list = extract_sig_genes(trendstat_list, alpha)
+```
+
+Plot trend-statistics for significant genes in synthetic dataset
+
+```{r sim-trendstats-plot, fig.width = 7, fig.height = 7, include = TRUE, echo = TRUE, fig.align = 'left', fig.cap = ''}
+sig_genes = sig_list[['markcorr']][, 'gene']
+plot_trendstats(trendstat_list, sig_genes)
+```
+
+The grey band indicates a null-distribution with Bonferroni-adjusted limits and may therefore be more conservative than the Benjamini-Hochberg P-value used to extract the significant genes.
+
+```{r real-data}
+```
+
+## Real data
+### Data preparation
+#### Read data
+
+```{r }
+data('scialdone')
+counts = scialdone[['counts']]
+```
+
+#### Gene variability stats
+Filter genes on being expressed
+
+```{r }
+##Pass genes having at least 3 cells with minimum 5 in read count
+min.ncells.expr = 3
+min.expr = 5
+counts_filt = genefilter_exprmat(counts, min.expr, min.ncells.expr)
+dim(counts_filt)
+```
+
+Calculate gene variability stats
+
+```{r }
+quantile.cutoff = 0.9 ##filter out the most lowly expressed genes from the fitting
+method = 'glm' ##For (robust) linear regression set to 'rlm'
+vargenes_stats = calc_varstats(counts_filt, counts_filt, quant.cutoff = quantile.cutoff, method = method)
+```
+
+Select subset with the top-ranked most variable genes
+
+```{r }
+n.topvar = 500
+topvar.genes = rownames(vargenes_stats[['real.stats']])[1:n.topvar]
+```
+
+Plot gene variability stats, highlighting the 500 most variable genes
+
+```{r real-varstats-plot, fig.width = 5, fig.height = 5, include = TRUE, echo = TRUE, fig.align = 'left', fig.cap = ''}
+plot.ercc.points = FALSE
+plot_cv2vsmean(vargenes_stats, topvar.genes, plot.ercc.points = plot.ercc.points)
+```
+
+#### Normalize the read counts
+
+```{r }
+min.count = 1
+counts_norm = deseq_norm(counts, min.count)
+```
+
+#### Subset normalized counts on the most variable genes
+
+```{r }
+counts_sub = counts_norm[topvar.genes, ]
+dim(counts_sub)
+```
+
+#### tSNE dimensionality reduction
+
+```{r }
+##params
+tsne.k = 2 #Number of tSNE dimensions
+init.dims = 100 #Number of PCA-dimensions to reduce to before tSNE
+perp.frac = 0.2 #Fraction of cells 
+max.iter = 300 #Maximum number of iterations
+epoch = 50 #print status every epoch iteration
+
+##run tsne including initial pca
+tsne_res = trend.tsne(counts_sub, tsne.k, init.dims, perp.frac, max.iter, epoch)
+```
+
+If the error does not seem to have converged increase the argument 'max.iter'
+
+```{r create-point-pattern}
+```
+
+#### Create point-pattern using tSNE positions as spatial distribution and expression levels as mark distribution
+
+```{r }
+##Convert tSNE cell positions to point pattern
+pp = pos2pp(tsne_res)
+
+##Set marks as the logged normalized gene expression 
+log.fcn = log10
+pp = set_marks(pp, counts_sub, log.fcn = log.fcn)
+```
+
+#### Plot top variable genes in tSNE space
+
+```{r }
+##Subset on top variable genes
+n.top2plot = 10
+topvar.genes = rownames(vargenes_stats[['real.stats']])[1:n.top2plot]
+pp2plot = pp_select(pp, topvar.genes)
+
+```{r real-tsne-scatter-plot, fig.width = 5, fig.height = 5, include = TRUE, echo = TRUE, fig.align = 'left', fig.cap = ''}
+plot_pp_scatter(pp2plot, log_marks = FALSE, scale_marks = FALSE, pal.direction = -1)
+```
+
+A number of the most variable genes do not seem to have a spatial trend, e.g. Dqx1 and the Gm* genes.
+To find genes that have a spatial trend in an automated fashion and to assess the significance of the spatial trend we run trendsceek.
+
+```{r real-run-trendsceek}
+```
+
+### Run trendsceek
+To decrease the time it takes to run this vignette-example we run trendsceek using just the 10 most variable genes and with 100 permutations.
+
+```{r real-trendsceek, results='hide'}
+##set parameters
+nrand = 100
+ncores = 1
+
+##run
+trendstat_list = trendsceek_test(pp2plot, nrand, ncores)
+```
+
+### Analyze trendsceek results
+A table with gene test-statistics and p-values is output by trendsceek_test.
+
+```{r }
+head(trendstat_list[['supstats_wide']])
+```
+
+Extract significant genes
+
+```{r }
+alpha = 0.05 ##Benjamini-Hochberg
+sig_list = extract_sig_genes(trendstat_list, alpha)
+```
+
+Number of significant genes
+
+```{r }
+lapply(sig_list, nrow)
+```
+
+#### Significant mark-correlation genes
+
+```{r }
+##get significant genes
+sig_genes = sig_list[['markcorr']][, 'gene']
+```
+
+Plot trend-statistics for significant genes
+
+```{r real-markcorr-trendstats-plot, fig.width = 7, fig.height = 7, include = TRUE, echo = TRUE, fig.align = 'left', fig.cap = ''}
+plot_trendstats(trendstat_list, sig_genes)
+```
+
+Create marked point-pattern containing subset of significant genes
+
+```{r }
+pp_sig = pp_select(pp, sig_genes)
+```
+
+Scatter-plot with unscaled expression levels
+
+```{r real-markcorr-scatter-notscaled-plot, fig.width = 5, fig.height = 5, include = TRUE, echo = TRUE, fig.align = 'left', fig.cap = ''}
+plot_pp_scatter(pp_sig, log_marks = FALSE, scale_marks = FALSE, pal.direction = -1)
+```
+
+Plots with scaled expression per gene
+
+```{r real-markcorr-scatter-scaled-plot, fig.width = 5, fig.height = 5, include = TRUE, echo = TRUE, fig.align = 'left', fig.cap = ''}
+plot_pp_scatter(pp_sig, log_marks = FALSE, scale_marks = TRUE, pal.direction = -1)
+
+```{r real-markcorr-density-scaled-plot, fig.width = 5, fig.height = 5, include = TRUE, echo = TRUE, fig.align = 'left', fig.cap = ''}
+plot_pp_density(pp_sig, log_marks = FALSE)
+```
+
+#### Identify and highlight cells located in regions exceeding background level
+The function "cellsceek_test" creates a (cell x gene) table with values of 1 if a cell is in a region exceeding the background level and 0 otherwise.
+
+```{r real-celltest, results='hide', message=FALSE, warning=FALSE}
+nrand = 100
+cellpeaks_siggenes = cellsceek_test(pp_sig, nrand = nrand)
+sig_cells = get_sigcells(cellpeaks_siggenes)
+
+```{r real-celltest-sigcells}
+head(sig_cells, 10)
+```
+
+Plot position of cells located in regions exceeding the null distribution background level
+
+```{r real-sigcells-plot, fig.width = 5, fig.height = 5, include = TRUE, echo = TRUE, fig.align = 'left', fig.cap = ''}
+plot_pp_density(pp_sig, log_marks = FALSE, cells2highlight = sig_cells)
+```
+
+#### Significant mark-variogram genes
+
+```{r }
+##get significant genes
+sig_genes = sig_list[['markvario']][, 'gene']
+```
+
+Plot trend-statistics for significant genes
+
+```{r real-markvario-trendstats-plot, fig.width = 7, fig.height = 7, include = TRUE, echo = TRUE, fig.align = 'left', fig.cap = ''}
+plot_trendstats(trendstat_list, sig_genes)
+```
+
+Create marked point-pattern containing subset of significant genes
+
+```{r }
+pp_sig = pp_select(pp, sig_genes)
+```
+
+Scatter-plot with unscaled expression levels
+
+```{r real-markvario-scatter-notscaled-plot, fig.width = 5, fig.height = 5, include = TRUE, echo = TRUE, fig.align = 'left', fig.cap = ''}
+plot_pp_scatter(pp_sig, log_marks = FALSE, scale_marks = FALSE, pal.direction = -1)
+```
+
+Plots with scaled expression per gene
+
+```{r real-markvario-scatter-scaled-plot, fig.width = 5, fig.height = 5, include = TRUE, echo = TRUE, fig.align = 'left', fig.cap = ''}
+plot_pp_scatter(pp_sig, log_marks = FALSE, scale_marks = TRUE, pal.direction = -1)
+
+```{r real-markvario-density-scaled-plot, fig.width = 5, fig.height = 5, include = TRUE, echo = TRUE, fig.align = 'left', fig.cap = ''}
+plot_pp_density(pp_sig, log_marks = FALSE)
+```
+

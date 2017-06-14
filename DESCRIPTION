@@ -1,0 +1,36 @@
+Package: trendsceek
+Title: Identify Genes with Spatial Expression Trends in Single-Cell Gene Expression Data
+Version: 0.9.0
+Authors@R: c(person("Daniel", "Edsgärd", email = 'edsgard@hotmail.com', role = c("aut", "cre")))
+Description: Identify genes with spatial expression trends in single-cell gene expression data using marked point processes.
+URL: https://github.com/edsgard/trendsceek
+BugReports: https://github.com/edsgard/trendsceek/issues
+Depends: R (>= 3.3.1)
+License: GPL-3
+Encoding: UTF-8
+LazyData: true
+Imports:
+    BiocParallel,
+    genefilter,
+    statmod,
+    MASS,
+    matrixStats,
+    reshape2,
+    ggplot2,
+    dplyr,
+    tidyr,
+    grid,
+    tsne,
+    RColorBrewer,
+    KernSmooth,
+    spatstat,
+    sm,
+    tibble,
+    DESeq2,
+    data.table    
+Suggests:
+    testthat,
+    knitr,
+    rmarkdown
+VignetteBuilder: knitr
+RoxygenNote: 5.0.1
