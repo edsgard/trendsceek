@@ -6,7 +6,7 @@ First, install the package dependencies which are available on bioconductor but
 not on CRAN:
 ```R
 source("http://www.bioconductor.org/biocLite.R")
-deps = c('BiocParallel')
+deps = c('BiocParallel', 'genefilter', 'DESeq2')
 new_deps = deps[!(deps %in% installed.packages()[,"Package"])]
 if(length(new_deps) != 0){biocLite(new_deps)}
 ```
@@ -72,4 +72,4 @@ browseURL('https://github.com/edsgard/trendsceek/tree/master/inst/doc/refman.pdf
 If you use trendsceek, please cite it as follows:
 
 Edsgärd D. and Sandberg R., Identification of spatial expression
-trends in single-cell gene expression data, <em>Nature Methods</em>, 2017<br>
+trends in single-cell gene expression data, 2017<br>
