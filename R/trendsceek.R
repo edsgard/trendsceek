@@ -156,7 +156,7 @@ cellsceek_jpp <- function(j_pp, nrand = 1000, cell_alpha = 0.05, h = NA){
 #' trendstat_list = trendsceek_test(pp, nrand = 100, ncores = 1)
 #' 
 #' @export
-trendsceek_test <- function(pp, nrand = 1e5, ncores = 1, alpha_env = 0.1 / ifelse(is.numeric(pp[['marks']]), length(pp[['marks']]), ncol(pp[['marks']])), alpha_bh = 0.05, alpha_nom_early = 0.5){
+trendsceek_test <- function(pp, nrand = 1e5, ncores = 1, alpha_env = 0.1 / ifelse(is.numeric(pp[['marks']]), length(pp[['marks']]), ncol(pp[['marks']])), alpha_bh = 0.05, alpha_nom_early = (alpha_bh * 4) / ifelse(ifelse(is.numeric(pp[['marks']]), length(pp[['marks']]), ncol(pp[['marks']])) >= 500, 10, 1)){
     
     ##init parallelization
     bp_param = BiocParallel::MulticoreParam(workers = ncores)
@@ -376,10 +376,14 @@ calc_pp_trendstats_jmethod <- function(pp, pp.perm.list, j.fcn, alpha_env = 0.05
     local.stats.list = list()
     j_nsim_it = 0
     j_p = 0
+    alpha_nom_earlystop = 0.5 ## just used for 10 first permutations
     tstat.list = list()
-    while(j_p <= alpha_nom_early && j_nsim_it < n_simsplits){
-        j_nsim_it = j_nsim_it + 1        
-
+    while(j_p <= alpha_nom_earlystop && j_nsim_it < n_simsplits){
+        j_nsim_it = j_nsim_it + 1
+        if(j_nsim_it > 1){
+            alpha_nom_earlystop = alpha_nom_early
+        }
+        
         print(sprintf('Calculations for null subset %i/%i...', j_nsim_it, n_simsplits))
         
         ##select subset from pregenerated null (pp.perm.list)
