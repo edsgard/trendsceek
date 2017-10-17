@@ -383,9 +383,7 @@ calc_pp_trendstats_jmethod <- function(pp, pp.perm.list, j.fcn, alpha_env = 0.05
         if(j_nsim_it > 1){
             alpha_nom_earlystop = alpha_nom_early
         }
-        
-        print(sprintf('Calculations for null subset %i/%i...', j_nsim_it, n_simsplits))
-        
+                
         ##select subset from pregenerated null (pp.perm.list)
         ##e.g. 11-100
         if(j_nsim_it == 1){
@@ -397,11 +395,12 @@ calc_pp_trendstats_jmethod <- function(pp, pp.perm.list, j.fcn, alpha_env = 0.05
         
         j_pp_perm_list = pp.perm.list[jperm_start:jperm_end]
 
+        
         ##get local (per radius) test stats for subset
         ##This is the time-consuming step
         j_nsim = length(j_pp_perm_list)
         j_localstats = spatstat::envelope(pp, j.fcn, nsim = j_nsim, simulate = j_pp_perm_list, global = FALSE, nsim2 = 0, savefuns = TRUE, verbose = FALSE)
-
+        
         ##add test-stats from previous subsets
         local.stats.list = add_subsetstats(local.stats.list, j_localstats, j_nsim_it)
         
