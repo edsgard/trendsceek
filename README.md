@@ -71,5 +71,5 @@ browseURL('https://github.com/edsgard/trendsceek/tree/master/inst/doc/refman.pdf
 ## Citation
 If you use trendsceek, please cite it as follows:
 
-Edsgärd D. and Sandberg R., Identification of spatial expression
+Edsgärd D. et al., Identification of spatial expression
 trends in single-cell gene expression data, Nature Methods, 2018<br>
