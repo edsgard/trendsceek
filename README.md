@@ -1,7 +1,12 @@
 # trendsceek
 Identify genes with spatial expression trends in single-cell gene-expression data 
 
+## System requirements
+trendsceek has been tested on R 3.3.1 and is platform independent (tested on Linux, OS X and Windows). For parallel execution, trendsceek has been tested on a shared-memory server (120 cores, Intel Xeon 2.3GHz, x86_64, 512Gb RAM).
+
 ## Installation
+Typical installation takes <10 minutes.
+
 First, install the package dependencies which are available on bioconductor but
 not on CRAN:
 ```R
@@ -17,12 +22,14 @@ library('devtools')
 devtools::install_github('edsgard/trendsceek')
 ```
 
-## Tutorial
+## Tutorial/Demo
 Once you've installed trendsceek you'll be able to follow the
 vignette-tutorial. You can open it by:
 ```R
 vignette('trendsceek')
 ```
+Expected run-time on a normal desktop computer is <10 min.
+
 
 ## Minimal example
 ```R
