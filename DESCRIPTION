@@ -1,6 +1,6 @@
 Package: trendsceek
 Title: Identify Genes with Spatial Expression Trends in Single-Cell Gene Expression Data
-Version: 0.9.0
+Version: 1.0.0
 Authors@R: c(person("Daniel", "Edsgärd", email = 'edsgard@hotmail.com', role = c("aut", "cre")))
 Description: Identify genes with spatial expression trends in single-cell gene expression data using marked point processes.
 URL: https://github.com/edsgard/trendsceek

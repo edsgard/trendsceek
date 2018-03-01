@@ -4,9 +4,11 @@
 \alias{trendsceek_test}
 \title{Test for the presence of spatial expression patterns}
 \usage{
-trendsceek_test(pp, nrand = 1e+05, ncores = 1,
+trendsceek_test(pp, nrand = 10000, ncores = 1,
   alpha_env = 0.1/ifelse(is.numeric(pp[["marks"]]), length(pp[["marks"]]),
-  ncol(pp[["marks"]])), alpha_bh = 0.05, alpha_nom_early = 0.5)
+  ncol(pp[["marks"]])), alpha_bh = 0.05, alpha_nom_early = (alpha_bh *
+  4)/ifelse(ifelse(is.numeric(pp[["marks"]]), length(pp[["marks"]]),
+  ncol(pp[["marks"]])) >= 500, 10, 1))
 }
 \arguments{
 \item{pp}{A point pattern with one or more mark distributions.}
