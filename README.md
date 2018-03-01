@@ -22,6 +22,12 @@ library('devtools')
 devtools::install_github('edsgard/trendsceek')
 ```
 
+Alternatively, installation can then be done from a local binary package
+tarball from the shell:
+```bash
+R CMD INSTALL trendsceek_1.0.0.tar.gz
+```
+
 ## Tutorial/Demo
 Once you've installed trendsceek you'll be able to follow the
 vignette-tutorial. You can open it by:
