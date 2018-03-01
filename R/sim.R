@@ -231,5 +231,5 @@ add_markdist_windowed <- function(pp, bg_marks, spike_marks, x_frac = 0.1, y_fra
     colnames(marx) = paste('g', 1:ncol(marx), sep = '')
     pp[['marks']] = marx
 
-    return(list(pp = pp, n_spiked = n_spiked))
+    return(list(pp = pp, n_spiked = n_spiked, spiked_ind = high_ind))
 }
