@@ -86,4 +86,4 @@ If you use trendsceek, please cite it as follows:
 
 Edsgärd D. et al., Identification of spatial expression
 trends in single-cell gene expression data, <em>Nature Methods</em>, 2018<br>
-<a href="doi:10.1038/nmeth.4634">doi:10.1038/nmeth.4634</a>
+<a href="http://doi:10.1038/nmeth.4634">doi:10.1038/nmeth.4634</a>
